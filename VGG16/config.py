@@ -26,7 +26,7 @@ tf.flags.DEFINE_string(flag_name='conv6_ksizes', default_value=[3, 3, 256, 256],
 #   layer7 parameters
 tf.flags.DEFINE_string(flag_name='conv7_ksizes', default_value=[3, 3, 256, 256], docstring='conv7_ksizes')
 #   max pool
-tf.flags.DEFINE_string(flag_name='max_poo13_strides', default_value=[1, 2, 2, 1], docstring='max_poo13_strides')
+tf.flags.DEFINE_string(flag_name='max_poo13_strides', default_value=[1, 1, 1, 1], docstring='max_poo13_strides')
 
 #   layer8 parameters
 tf.flags.DEFINE_string(flag_name='conv8_ksizes', default_value=[3, 3, 256, 512], docstring='conv8_ksizes')
