@@ -13,7 +13,11 @@ def load_data_cifar(file=current_dir + '/data/cifar-100-python/train'):
     fo.close()
     x = dicts[b'data']
     y = dicts[b'fine_labels']
+    y = np.reshape(y,len(y))
     filenames = dicts[b'filenames']
+    shuffled_index = np.random.permutation(len(y))
+    x = x[shuffled_index]
+    y = y[shuffled_index]
 
     return x, y, filenames
 
