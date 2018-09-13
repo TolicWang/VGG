@@ -3,6 +3,7 @@ from config import FLAGS
 from cnn import VGG16
 import datetime
 import os, sys
+import numpy as np
 
 current_dir = os.path.abspath('../')
 sys.path.append(current_dir)
@@ -13,6 +14,10 @@ print('\n----------------Parameters--------------')  # 在网络训练之前，�
 for attr, value in sorted(FLAGS.__flags.items()):
     print('{}={}'.format(attr.upper(), value))
 print('----------------Parameters--------------\n')
+x, y, _ = load_data_cifar()
+x_train,y_train = x[:40000],y[:40000]
+x_dev,y_dev = x[-10000:],y[-10000:]
+
 
 with tf.Graph().as_default():
     session_conf = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
@@ -37,8 +42,9 @@ with tf.Graph().as_default():
     else:
         sess.run(tf.global_variables_initializer())
     last = datetime.datetime.now()
-    x_train, y_train, _ = load_data_cifar()
+    epoches = 0
     for i in range(999999900000):
+
         batch_x, batch_y = gen_train_or_test_batch(x_train, y_train, i, FLAGS.batch_size)
         feed_dic = {vgg16.input_x: batch_x, vgg16.input_y: batch_y}
         _, loss, acc = sess.run([train_step, vgg16.loss, vgg16.accuracy], feed_dict=feed_dic)
@@ -47,8 +53,18 @@ with tf.Graph().as_default():
             now = datetime.datetime.now()
             print('loss:%.7f,acc on train :%.7f---time:%s'%(loss, acc, now - last))
             last = now
+        if (i%1300) ==0:
+            print('========> epoches:',epoches)
+            epoches +=1
         if (i % FLAGS.save_freq) == 0:
             print('Iterations:  ', i)
             saver.save(sess, os.path.join(FLAGS.model_save_path,
                                           FLAGS.model_name),
                        global_step=global_step, write_meta_graph=False)
+            correct_sum = 0
+            for i in range(100):
+                batch_x, batch_y = gen_train_or_test_batch(x_dev, y_dev, i, 100)
+                feed_dic = {vgg16.input_x: batch_x, vgg16.input_y: batch_y}
+                prediction = sess.run(vgg16.predictions, feed_dict=feed_dic)
+                correct_sum += np.sum(prediction*1)
+            print('Acc on dev dataset:', (correct_sum / 10000))
