@@ -8,6 +8,8 @@ def conv2d_op(input, ksizes, op_num):
         bias = tf.constant(value=0, dtype=tf.float32, shape=[ksizes[3]])
         conv = tf.nn.conv2d(input=input, filter=weights, strides=[1, 1, 1, 1], padding='SAME')
         convs = tf.nn.bias_add(conv, bias)
+        convs = tf.contrib.layers.batch_norm(convs, decay=0.999, center=True, scale=True, epsilon=1e-3,
+                                     is_training=True, updates_collections=None)
         return tf.nn.relu(convs)
 
 
@@ -22,6 +24,8 @@ def full_collection_op(input, nodes_in, nodes_out, op_num, relu=True):
         bias = tf.constant(value=0, dtype=tf.float32, shape=[nodes_out])
         tf.add_to_collection('l2_loss', tf.nn.l2_loss(weights))
         result = tf.nn.xw_plus_b(input, weights, bias)
+        result = tf.contrib.layers.batch_norm(result, decay=0.999, center=True, scale=True, epsilon=1e-3,
+                                       is_training=True, updates_collections=None)
         if relu:
             return tf.nn.relu(result)
         else:
@@ -74,10 +78,12 @@ class VGG16(object):
             self.loss = tf.reduce_mean(cross_entropy) + l2_losses * FLAGS.l2_regul_rate
 
         with tf.name_scope('pre-acc'):
-            self.predictions = tf.argmax(self.logits, axis=1, name='prediction')
-            correct_predictions = tf.equal(self.predictions,
-                                           self.input_y)
-            self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+            self.predictions = tf.nn.in_top_k(predictions=self.logits,targets=self.input_y,k=1)
+            self.accuracy = tf.reduce_mean(tf.cast(self.predictions,tf.float32))
+            # self.predictions = tf.argmax(self.logits, axis=1, name='prediction')
+            # correct_predictions = tf.equal(self.predictions,
+            #                                self.input_y)
+            # self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
 
 if __name__ == '__main__':
