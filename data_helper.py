@@ -2,18 +2,18 @@ import os
 import sys
 import numpy as np
 import random
-current_dir = '../'
-sys.path.append(current_dir)
+import pickle
 
 
-def load_data_cifar(file=current_dir + '/data/cifar-100-python/train'):
-    import pickle
+
+
+def load_data_cifar100(file='./data/cifar-100-python/train'):
     with open(file, 'rb') as fo:
         dicts = pickle.load(fo, encoding='bytes')
     fo.close()
     x = dicts[b'data']
     y = dicts[b'fine_labels']
-    y = np.reshape(y,len(y))
+    y = np.reshape(y, len(y))
     filenames = dicts[b'filenames']
     np.random.seed(40)
     shuffled_index = np.random.permutation(len(y))
@@ -22,6 +22,34 @@ def load_data_cifar(file=current_dir + '/data/cifar-100-python/train'):
 
     return x, y, filenames
 
+
+def load_data_cifar10(file='./data/cifar-10-batches-py/',test=False):
+    if test:
+        dir = file+'test_batch'
+        with open(dir, 'rb') as fo:
+            dicts = pickle.load(fo, encoding='bytes')
+        fo.close()
+        x = dicts[b'data']
+        y = dicts[b'labels']
+    else:
+        for i in range(1, 6):
+            dir = file + 'data_batch_%d' % i
+            with open(dir, 'rb') as fo:
+                dicts = pickle.load(fo, encoding='bytes')
+            fo.close()
+            temp_x = dicts[b'data']
+            temp_y = dicts[b'labels']
+            if i == 1:
+                x = temp_x
+                y = temp_y
+            else:
+                x = np.vstack((x, temp_x))
+                y.extend(temp_y)
+    np.random.seed(40)
+    shuffled_index = np.random.permutation(len(y))
+    x = x[shuffled_index]
+    y = y[shuffled_index]
+    return x, y
 
 def per_image_standardization(images):
     batch_size = images.shape[0]
@@ -42,6 +70,7 @@ def per_image_standardization(images):
         images[index] = image
     return images
 
+
 def gen_train_or_test_batch(x_train, y_train, begin=0, batch_size=64):
     data_size = len(y_train)
     start = (begin * batch_size) % data_size
@@ -52,11 +81,12 @@ def gen_train_or_test_batch(x_train, y_train, begin=0, batch_size=64):
     standardized_images_trans = standardized_images.transpose(0, 2, 3, 1)
     return standardized_images_trans, y
 
+
 def _random_crop(batch, crop_shape, padding=None):
     oshape = np.shape(batch[0])
 
     if padding:
-        oshape = (oshape[0] + 2*padding, oshape[1] + 2*padding)
+        oshape = (oshape[0] + 2 * padding, oshape[1] + 2 * padding)
     new_batch = []
     npad = ((padding, padding), (padding, padding), (0, 0))
     for i in range(len(batch)):
@@ -67,32 +97,38 @@ def _random_crop(batch, crop_shape, padding=None):
         nh = random.randint(0, oshape[0] - crop_shape[0])
         nw = random.randint(0, oshape[1] - crop_shape[1])
         new_batch[i] = new_batch[i][nh:nh + crop_shape[0],
-                                    nw:nw + crop_shape[1]]
+                       nw:nw + crop_shape[1]]
     return new_batch
 
 
 def _random_flip_leftright(batch):
-        for i in range(len(batch)):
-            if bool(random.getrandbits(1)):
-                batch[i] = np.fliplr(batch[i])
-        return batch
+    for i in range(len(batch)):
+        if bool(random.getrandbits(1)):
+            batch[i] = np.fliplr(batch[i])
+    return batch
+
+
 def _random_flip_updown(batch):
     for i in range(len(batch)):
         if bool(random.getrandbits(1)):
             batch[i] = np.flipud(batch[i])
     return batch
+
+
 def data_augmentation(batch):
     batch = _random_flip_leftright(batch)
     batch = _random_flip_updown(batch)
     # batch = _random_crop(batch, [32, 32], 4)
     return batch
 
+
 def visualize(index=0):
     import matplotlib.pyplot as plt
     from PIL import Image
-    x, y, filenames = load_data_cifar()
+    # x, y, filenames = load_data_cifar100()
+    x, y= load_data_cifar10()
     index = np.random.randint(0, len(y)) if index >= len(y) else index
-    print('The picture is ', filenames[index])
+    # print('The picture is ', filenames[index])
     image = x[index].reshape(3, 32, 32)
     # 得到RGB通道
     r = Image.fromarray(image[0]).convert('L')
@@ -105,7 +141,9 @@ def visualize(index=0):
 
 
 if __name__ == '__main__':
-    x, y, _ = load_data_cifar()
-    xx, yy = gen_train_or_test_batch(x, y, 20, 50)
-    print(xx)
-    # visualize(100)
+
+    x,y=load_data_cifar10(test=True)
+    # x, y, _ = load_data_cifar100()
+    # xx, yy = gen_train_or_test_batch(x, y, 20, 50)
+    # print(xx)
+    visualize(200)
