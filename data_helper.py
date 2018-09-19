@@ -46,6 +46,7 @@ def load_data_cifar10(file='./data/cifar-10-batches-py/',test=False):
                 x = np.vstack((x, temp_x))
                 y.extend(temp_y)
     np.random.seed(40)
+    y = np.reshape(y, len(y))
     shuffled_index = np.random.permutation(len(y))
     x = x[shuffled_index]
     y = y[shuffled_index]
