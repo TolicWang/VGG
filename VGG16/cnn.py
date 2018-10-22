@@ -5,7 +5,7 @@ from config import FLAGS
 def conv2d_op(input, ksizes, op_num, is_training):
     with tf.name_scope('conv-%s' % op_num):
         weights = tf.Variable(tf.truncated_normal(shape=ksizes, stddev=0.1, dtype=tf.float32), name='Weights')
-        bias = tf.constant(value=0, dtype=tf.float32, shape=[ksizes[3]])
+        bias = tf.Variable(tf.constant(value=0, dtype=tf.float32, shape=[ksizes[3]]))
         conv = tf.nn.conv2d(input=input, filter=weights, strides=[1, 1, 1, 1], padding='SAME')
         convs = tf.nn.bias_add(conv, bias)
         convs = tf.layers.batch_normalization(convs, momentum=0.9, training=is_training)
@@ -20,7 +20,7 @@ def max_pool_op(input, strides, op_num):
 def full_collection_op(input, nodes_in, nodes_out, op_num, relu=True, is_training=True):
     with tf.name_scope('fc-%s' % op_num):
         weights = tf.Variable(tf.truncated_normal(shape=[nodes_in, nodes_out], stddev=0.1, dtype=tf.float32))
-        bias = tf.constant(value=0, dtype=tf.float32, shape=[nodes_out])
+        bias = tf.Variable(tf.constant(value=0, dtype=tf.float32, shape=[nodes_out]))
         tf.add_to_collection('l2_loss', tf.nn.l2_loss(weights))
         result = tf.nn.xw_plus_b(input, weights, bias)
         result = tf.layers.batch_normalization(result, momentum=0.9, training=is_training)
@@ -81,6 +81,7 @@ class VGG16(object):
         with tf.name_scope('pre-acc'):
             self.predictions = tf.nn.in_top_k(predictions=self.logits, targets=self.input_y, k=1)
             self.accuracy = tf.reduce_mean(tf.cast(self.predictions, tf.float32))
+
             # self.predictions = tf.argmax(self.logits, axis=1, name='prediction')
             # correct_predictions = tf.equal(self.predictions,
             #                                self.input_y)

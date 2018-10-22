@@ -5,8 +5,6 @@ import random
 import pickle
 
 
-
-
 def load_data_cifar100(file='./data/cifar-100-python/train'):
     with open(file, 'rb') as fo:
         dicts = pickle.load(fo, encoding='bytes')
@@ -23,9 +21,17 @@ def load_data_cifar100(file='./data/cifar-100-python/train'):
     return x, y, filenames
 
 
-def load_data_cifar10(file='./data/cifar-10-batches-py/',test=False):
+def load_data_cifar10(file='./data/cifar-10-batches-py/', test=False):
+    """
+    本函数的作用是读取cifar-10数据集
+    :param file:
+    :param test: test = False 表示读取训练集 test=True 表示读取测试集
+    :return: 返回打乱后的训练集或测试集
+    训练集： shape = [50000,3072]
+    测试集： shape = [10000,3072]
+    """
     if test:
-        dir = file+'test_batch'
+        dir = file + 'test_batch'
         with open(dir, 'rb') as fo:
             dicts = pickle.load(fo, encoding='bytes')
         fo.close()
@@ -33,7 +39,7 @@ def load_data_cifar10(file='./data/cifar-10-batches-py/',test=False):
         y = dicts[b'labels']
     else:
         for i in range(1, 6):
-            dir = file + 'data_batch_%d' % i
+            dir = file + 'data_batch_%d'%i
             with open(dir, 'rb') as fo:
                 dicts = pickle.load(fo, encoding='bytes')
             fo.close()
@@ -52,7 +58,13 @@ def load_data_cifar10(file='./data/cifar-10-batches-py/',test=False):
     y = y[shuffled_index]
     return x, y
 
+
 def per_image_standardization(images):
+    """
+    本函数的作用是对每个图片去均值
+    :param images:
+    :return:
+    """
     batch_size = images.shape[0]
     for index in range(batch_size):
         image = images[index]
@@ -127,7 +139,7 @@ def visualize(index=0):
     import matplotlib.pyplot as plt
     from PIL import Image
     # x, y, filenames = load_data_cifar100()
-    x, y= load_data_cifar10()
+    x, y = load_data_cifar10()
     index = np.random.randint(0, len(y)) if index >= len(y) else index
     # print('The picture is ', filenames[index])
     image = x[index].reshape(3, 32, 32)
@@ -142,9 +154,10 @@ def visualize(index=0):
 
 
 if __name__ == '__main__':
-
-    x,y=load_data_cifar10(test=True)
+    x, y_ = load_data_cifar10(test=False)
     # x, y, _ = load_data_cifar100()
     # xx, yy = gen_train_or_test_batch(x, y, 20, 50)
     # print(xx)
-    visualize(200)
+    # visualize(200)
+    print(x.shape)
+    print(y_)

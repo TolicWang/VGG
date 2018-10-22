@@ -7,14 +7,14 @@ import numpy as np
 
 current_dir = os.path.abspath('../')
 sys.path.append(current_dir)
-from data_helper import gen_train_or_test_batch, load_data_cifar,data_augmentation
+from data_helper import gen_train_or_test_batch, load_data_cifar10, data_augmentation
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # 指定一个GPU
 print('\n----------------Parameters--------------')  # 在网络训练之前，先打印出来看看
 for attr, value in sorted(FLAGS.__flags.items()):
     print('{}={}'.format(attr.upper(), value))
 print('----------------Parameters--------------\n')
-x, y, _ = load_data_cifar()
+x, y = load_data_cifar10(file=current_dir + '/data/cifar-10-batches-py/', test=False)
 x_train, y_train = x[:40000], y[:40000]
 x_dev, y_dev = x[-10000:], y[-10000:]
 print("train/dev: {}/{} !".format(len(y_train), len(y_dev)))
@@ -47,14 +47,13 @@ with tf.Graph().as_default():
         feed_dic = {vgg16.is_training: True, vgg16.input_x: batch_x, vgg16.input_y: batch_y}
         _, loss, acc = sess.run([train_step, vgg16.loss, vgg16.accuracy], feed_dict=feed_dic)
 
-        if (i+1 % 50) == 0:
+        if (i + 1) % 50 == 0:
             now = datetime.datetime.now()
-            print('loss:%.7f,acc on train :%.7f---time:%s' % (loss, acc, now - last))
+            print('loss:%.7f,acc on train :%.7f-----time:%s' % (loss, acc, now - last))
             last = now
-        if (i+1  % 1300) == 0:
-            print('========> epoches:', epoches)
+        if (i + 1) % 1300 == 0:
             epoches += 1
-        # if (i % FLAGS.save_freq) == 0:
+            print('========> epoches:', epoches)
             print('Iterations:  ', i)
             saver.save(sess, os.path.join(FLAGS.model_save_path,
                                           FLAGS.model_name),

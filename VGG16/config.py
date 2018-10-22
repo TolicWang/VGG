@@ -51,7 +51,7 @@ tf.flags.DEFINE_integer(flag_name='fc1_size', default_value=4096, docstring='fc1
 #   layer15 parameters
 tf.flags.DEFINE_integer(flag_name='fc2_size', default_value=4096, docstring='fc2_size')
 #   layer16 parameters
-tf.flags.DEFINE_integer(flag_name='fc3_size', default_value=100, docstring='fc3_size')
+tf.flags.DEFINE_integer(flag_name='fc3_size', default_value=10, docstring='fc3_size')
 
 
 #   training parameters
@@ -68,9 +68,5 @@ tf.flags.DEFINE_string(flag_name='model_name', default_value='model.ckpt', docst
 tf.flags.DEFINE_integer(flag_name='save_freq', default_value=5000, docstring='save_freq')
 tf.flags.DEFINE_integer(flag_name='test_batch_size', default_value=5000, docstring='test_batch_size')
 
-FLAGS = tf.flags.FLAGS
-# FLAGS.flag_values_dict()  # 解析参数成字典
-FLAGS._parse_flags()
-# print('\n----------------Parameters--------------')  # 在网络训练之前，先打印出来看看
-# for attr, value in (FLAGS.__flags.items()):
-#     print('{}={}'.format(attr.upper(), value))
+
+
